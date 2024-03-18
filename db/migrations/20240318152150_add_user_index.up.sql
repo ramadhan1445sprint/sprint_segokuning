@@ -1,1 +1,1 @@
-CREATE INDEX IF NOT EXISTS unique_cred_type_value ON users(credential_type, credential_value);
+CREATE INDEX IF NOT EXISTS unique_cred_type_value ON users(credential_value);

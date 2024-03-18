@@ -1,4 +1,4 @@
-CREATE TABLE comments (
+CREATE TABLE IF NOT EXISTS comments (
     id UUID PRIMARY KEY,
 	comment VARCHAR(500) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -7,4 +7,4 @@ CREATE TABLE comments (
     post_id UUID REFERENCES posts(id)
 );
 
-CREATE INDEX idx_comments ON comments (created_at);
+CREATE INDEX IF NOT EXISTS idx_comments ON comments (created_at);
