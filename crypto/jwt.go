@@ -12,10 +12,10 @@ func GenerateToken(id, credType, credValue, name string) (string, error) {
 	secret := config.GetString("JWT_SECRET")
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, entity.JWTClaims{
-		Id:    id,
-		Type:  credType,
-		Value: credValue,
-		Name:  name,
+		Id:              id,
+		CredentialType:  credType,
+		CredentialValue: credValue,
+		Name:            name,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(10 * time.Minute)),
 		},
@@ -41,10 +41,10 @@ func VerifyToken(token string) (*entity.JWTPayload, error) {
 	}
 
 	payload := &entity.JWTPayload{
-		Id:    claims.Id,
-		Type:  claims.Type,
-		Value: claims.Value,
-		Name:  claims.Name,
+		Id:              claims.Id,
+		CredentialType:  claims.CredentialType,
+		CredentialValue: claims.CredentialValue,
+		Name:            claims.Name,
 	}
 
 	return payload, nil
