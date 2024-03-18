@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS unique_cred_type_value CASCADE;
