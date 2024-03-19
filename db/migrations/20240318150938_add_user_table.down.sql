@@ -1,5 +1,3 @@
 DROP TABLE IF EXISTS users;
 
-DROP TYPE cred_type;
-
 DROP EXTENSION IF EXISTS "uuid-ossp";
