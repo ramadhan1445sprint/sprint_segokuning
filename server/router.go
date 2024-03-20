@@ -19,6 +19,7 @@ func (s *Server) RegisterRoute() {
 	mainRoute := s.app.Group("/v1")
 
 	registerHealthRoute(mainRoute, s.db)
+	registerUserRouter(mainRoute, s.db)
 	registerImageRoute(mainRoute)
 }
 
@@ -29,7 +30,7 @@ func registerHealthRoute(r fiber.Router, db *sqlx.DB) {
 	newRouteWithAuth(r, "GET", "/auth", ctr.AuthCheck)
 }
 
-func registerImageRoute(r fiber.Router)  {
+func registerImageRoute(r fiber.Router) {
 	bucket := config.GetString("S3_BUCKET_NAME")
 	cfg, err := awsCfg.LoadDefaultConfig(
 		context.Background(),
@@ -46,9 +47,18 @@ func registerImageRoute(r fiber.Router)  {
 		log.Fatal(err)
 	}
 
-	ctr :=controller.NewImageController(svc.NewImageSvc(cfg, bucket))
-	
+	ctr := controller.NewImageController(svc.NewImageSvc(cfg, bucket))
+
 	newRouteWithAuth(r, "POST", "/image", ctr.UploadImage)
+}
+
+func registerUserRouter(r fiber.Router, db *sqlx.DB) {
+	ctr := controller.NewUserController(svc.NewUserSvc(repo.NewUserRepo(db)))
+
+	userGroup := r.Group("/user")
+
+	newRoute(userGroup, "POST", "/register", ctr.Register)
+	newRoute(userGroup, "POST", "/login", ctr.Login)
 }
 
 func newRoute(router fiber.Router, method, path string, handler fiber.Handler) {
