@@ -1,1 +1,5 @@
+DROP INDEX IF EXISTS idx_tags;
+
+DROP INDEX IF EXISTS idx_posts;
+
 DROP TABLE IF EXISTS posts;

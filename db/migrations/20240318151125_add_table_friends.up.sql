@@ -9,8 +9,6 @@ CREATE TABLE IF NOT EXISTS friends(
   CONSTRAINT check_different_users CHECK (user_id1 <> user_id2)
 );
 
-CREATE INDEX IF NOT EXISTS friends_user_id
-	ON friends (user_id1);
+CREATE INDEX IF NOT EXISTS friends_user_id ON friends (user_id1);
 
-CREATE INDEX IF NOT EXISTS current_user_id
-	ON friends (user_id2);
+CREATE INDEX IF NOT EXISTS current_user_id ON friends (user_id2);

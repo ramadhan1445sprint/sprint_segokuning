@@ -19,6 +19,7 @@ func (s *Server) RegisterRoute() {
 	mainRoute := s.app.Group("/v1")
 
 	registerHealthRoute(mainRoute, s.db)
+	registerUserRouter(mainRoute, s.db)
 	registerImageRoute(mainRoute)
 	registerUserRouter(mainRoute, s.db)
 }
@@ -56,6 +57,8 @@ func registerUserRouter(r fiber.Router, db *sqlx.DB) {
 	ctr := controller.NewUserController(svc.NewUserSvc(repo.NewUserRepo(db)))
 	userGroup := r.Group("/user")
 
+	newRoute(userGroup, "POST", "/register", ctr.Register)
+	newRoute(userGroup, "POST", "/login", ctr.Login)
 	newRouteWithAuth(userGroup, "PATCH", "", ctr.UpdateAccountUser)
 	newRouteWithAuth(userGroup, "PATCH", "link/email", ctr.UpdateLinkEmailAccount)
 	newRouteWithAuth(userGroup, "PATCH", "link/phone", ctr.UpdateLinkPhoneAccount)
