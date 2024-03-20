@@ -31,8 +31,6 @@ func Auth(ctx *fiber.Ctx) error {
 	}
 
 	ctx.Locals("user_id", payload.Id)
-	ctx.Locals("cred_type", payload.CredentialType)
-	ctx.Locals("cred_value", payload.CredentialValue)
 	ctx.Locals("name", payload.Name)
 	return ctx.Next()
 }

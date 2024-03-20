@@ -4,6 +4,13 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+type RegistrationPayload struct {
+	CredentialType  CredType `json:"credentialType"`
+	CredentialValue string   `json:"credentialValue"`
+	Name            string   `json:"name"`
+	Password        string   `json:"password"`
+}
+
 type Credential struct {
 	CredentialType  string `json:"credentialType"`
 	CredentialValue string `json:"credentialValue"`
@@ -11,16 +18,12 @@ type Credential struct {
 }
 
 type JWTPayload struct {
-	Id              string
-	CredentialType  string
-	CredentialValue string
-	Name            string
+	Id   string
+	Name string
 }
 
 type JWTClaims struct {
-	Id              string
-	CredentialType  string
-	CredentialValue string
-	Name            string
+	Id   string
+	Name string
 	jwt.RegisteredClaims
 }
