@@ -1,1 +1,3 @@
+DROP INDEX IF EXISTS idx_comments;
+
 DROP TABLE IF EXISTS comments;

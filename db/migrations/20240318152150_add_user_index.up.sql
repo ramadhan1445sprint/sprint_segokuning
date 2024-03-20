@@ -1,2 +1,3 @@
-CREATE UNIQUE INDEX IF NOT EXISTS unique_email ON users(email);
-CREATE UNIQUE INDEX IF NOT EXISTS unique_phone ON users(phone);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_email_phone ON users(email, phone);
+
+CREATE INDEX IF NOT EXISTS idx_created_at_user On users(created_at);
