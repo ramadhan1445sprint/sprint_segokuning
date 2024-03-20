@@ -7,6 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.27.7
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.7
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.52.1
+	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/gofiber/fiber/v2 v2.52.2
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/uuid v1.5.0
@@ -19,6 +20,7 @@ require (
 
 require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
+	github.com/asaskevich/govalidator v0.0.0-20200108200545-475eaeb16496 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.1 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.15.3 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.3 // indirect
