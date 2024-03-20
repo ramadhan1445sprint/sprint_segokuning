@@ -95,19 +95,23 @@ func (s *userSvc) Register(payload entity.RegistrationPayload) (string, error) {
 }
 
 func (s *userSvc) UpdateAccountUser(user entity.UpdateAccountPayload, userId string) error {
-	err := s.repo.UpdateAccountUser(user, userId)
-	if err != nil {
-		if err.Error() == "user not found" {
-			return customErr.NewNotFoundError(err.Error())
-		} else {
-			return customErr.NewInternalServerError(err.Error())
-		}
+	if err := user.Validate(); err != nil {
+		return customErr.NewBadRequestError(err.Error())
+	}
+
+	if err := s.repo.UpdateAccountUser(user, userId); err != nil {
+		return customErr.NewInternalServerError(err.Error())
 	}
 
 	return nil
 }
 
 func (s *userSvc) UpdateLinkEmailAccount(email string, userId string) error {
+	// validate email
+	if err := entity.ValidateEmail(email); err != nil {
+		return customErr.NewBadRequestError(err.Error())
+	}
+
 	// check duplicate email
 	existingUser, err := s.repo.GetUser(email, "email")
 	if err != nil {
@@ -117,28 +121,32 @@ func (s *userSvc) UpdateLinkEmailAccount(email string, userId string) error {
 	}
 
 	if existingUser != nil {
-		errMsg := fmt.Sprintf("user with %s %s already exists", email, "email")
-		return customErr.NewConflictError(errMsg)
+		return customErr.NewConflictError("email already exists")
 	}
 
 	// check user already linked email
-	if err := s.repo.GetUserById(userId); err != nil {
+	user, err := s.repo.GetUserById(userId)
+	if err != nil {
 		return err
 	}
 
-	err1 := s.repo.UpdateLinkAccount(email, userId, "email")
-	if err1 != nil {
-		if err1.Error() == "user not found" {
-			return customErr.NewNotFoundError(err1.Error())
-		} else {
-			return customErr.NewInternalServerError(err1.Error())
-		}
+	if user.Email != "" {
+		return customErr.NewBadRequestError("email already linked")
+	}
+
+	if err := s.repo.UpdateLinkAccount(email, userId, "email"); err != nil {
+		return customErr.NewInternalServerError(err.Error())
 	}
 
 	return nil
 }
 
 func (s *userSvc) UpdateLinkPhoneAccount(phone string, userId string) error {
+	// validate phone
+	if err := entity.ValidatePhone(phone); err != nil {
+		return customErr.NewBadRequestError(err.Error())
+	}
+
 	// check duplicate phone
 	existingUser, err := s.repo.GetUser(phone, "phone")
 	if err != nil {
@@ -148,22 +156,21 @@ func (s *userSvc) UpdateLinkPhoneAccount(phone string, userId string) error {
 	}
 
 	if existingUser != nil {
-		errMsg := fmt.Sprintf("user with %s %s already exists", phone, "phone")
-		return customErr.NewConflictError(errMsg)
+		return customErr.NewConflictError("phone already exist")
 	}
 
 	// check user already linked phone
-	if err := s.repo.GetUserById(userId); err != nil {
+	user, err := s.repo.GetUserById(userId)
+	if err != nil {
 		return err
 	}
 
-	err1 := s.repo.UpdateLinkAccount(phone, userId, "phone")
-	if err1 != nil {
-		if err1.Error() == "user not found" {
-			return customErr.NewNotFoundError(err1.Error())
-		} else {
-			return customErr.NewInternalServerError(err1.Error())
-		}
+	if user.Phone != "" {
+		return customErr.NewBadRequestError("phone already linked")
+	}
+
+	if err := s.repo.UpdateLinkAccount(phone, userId, "phone"); err != nil {
+		return customErr.NewInternalServerError(err.Error())
 	}
 
 	return nil

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"regexp"
 
-	"github.com/go-ozzo/ozzo-validation/v4"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
 
@@ -28,21 +28,16 @@ const (
 )
 
 type UpdateAccountPayload struct {
-	ImageUrl string `db:"image_url" json:"imageUrl" validate:"required,url"`
-	Name     string `db:"name" json:"name" validate:"required,max=50,min=5"`
+	ImageUrl string `db:"image_url" json:"imageUrl"`
+	Name     string `db:"name" json:"name"`
 }
 
-type PostLinkEmailPayload struct {
-	Email string `db:"email" json:"email,omitempty" validate:"required,email"`
+type LinkEmailPayload struct {
+	Email string `db:"email" json:"email,omitempty"`
 }
 
-type PostLinkPhonePayload struct {
-	Phone string `db:"phone" json:"phone,omitempty" validate:"required,max=7,min=13,e164"`
-}
-
-type LinkAccountDetail struct {
-	Email string `json:"email"`
-	Phone string `json:"phone"`
+type LinkPhonePayload struct {
+	Phone string `db:"phone" json:"phone,omitempty"`
 }
 
 func NewUser(credType CredType, credValue, name, password string) *User {
@@ -83,6 +78,40 @@ func (u *User) Validate(credentialType CredType) error {
 				is.Email.Error("invalid email format"),
 			),
 		),
+	)
+
+	return err
+}
+
+func (u *UpdateAccountPayload) Validate() error {
+	err := validation.ValidateStruct(u,
+		validation.Field(&u.Name,
+			validation.Required.Error("name is required"),
+			validation.Length(5, 50).Error("name must be between 5 and 50 characters"),
+		),
+		validation.Field(&u.ImageUrl,
+			validation.Required.Error("image is required"),
+			is.URL.Error("image must be url"),
+		),
+	)
+
+	return err
+}
+
+func ValidateEmail(email string) error {
+	err := validation.Validate(email,
+		validation.Required.Error("email is required"),
+		is.Email.Error("email must be valid"),
+	)
+
+	return err
+}
+
+func ValidatePhone(phone string) error {
+	err := validation.Validate(phone,
+		validation.Required.Error("phone is required"),
+		validation.Length(7, 13).Error("phone must between 7 and 13 digits with country code"),
+		validation.By(validatePhoneNumberFormat),
 	)
 
 	return err

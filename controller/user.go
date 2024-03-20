@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"fmt"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/ramadhan1445sprint/sprint_segokuning/customErr"
 	"github.com/ramadhan1445sprint/sprint_segokuning/entity"
@@ -71,10 +69,8 @@ func (c *UserController) UpdateAccountUser(ctx *fiber.Ctx) error {
 	var user entity.UpdateAccountPayload
 	userId := ctx.Locals("user_id").(string)
 
-	fmt.Println(userId)
-
 	if err := ctx.BodyParser(&user); err != nil {
-		return ctx.Status(400).JSON(fiber.Map{"message": "body parsing error"})
+		return customErr.NewBadRequestError(err.Error())
 	}
 
 	err := c.svc.UpdateAccountUser(user, userId)
@@ -88,11 +84,11 @@ func (c *UserController) UpdateAccountUser(ctx *fiber.Ctx) error {
 }
 
 func (c *UserController) UpdateLinkEmailAccount(ctx *fiber.Ctx) error {
-	var user entity.PostLinkEmailPayload
+	var user entity.LinkEmailPayload
 	userId := ctx.Locals("user_id").(string)
 
 	if err := ctx.BodyParser(&user); err != nil {
-		return ctx.Status(400).JSON(fiber.Map{"message": "body parsing error"})
+		return customErr.NewBadRequestError(err.Error())
 	}
 
 	err := c.svc.UpdateLinkEmailAccount(user.Email, userId)
@@ -106,11 +102,11 @@ func (c *UserController) UpdateLinkEmailAccount(ctx *fiber.Ctx) error {
 }
 
 func (c *UserController) UpdateLinkPhoneAccount(ctx *fiber.Ctx) error {
-	var user entity.PostLinkPhonePayload
+	var user entity.LinkPhonePayload
 	userId := ctx.Locals("user_id").(string)
 
 	if err := ctx.BodyParser(&user); err != nil {
-		return ctx.Status(400).JSON(fiber.Map{"message": "body parsing error"})
+		return customErr.NewBadRequestError(err.Error())
 	}
 
 	err := c.svc.UpdateLinkPhoneAccount(user.Phone, userId)
