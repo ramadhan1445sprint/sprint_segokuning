@@ -21,7 +21,6 @@ func (s *Server) RegisterRoute() {
 	registerHealthRoute(mainRoute, s.db)
 	registerUserRouter(mainRoute, s.db)
 	registerImageRoute(mainRoute)
-	registerUserRouter(mainRoute, s.db)
 }
 
 func registerHealthRoute(r fiber.Router, db *sqlx.DB) {
