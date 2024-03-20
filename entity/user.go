@@ -19,6 +19,7 @@ type User struct {
 	ImageUrl    string `db:"image_url"`
 	FriendCount string `db:"friend_count"`
 	CreatedAt   string `db:"created_at"`
+	UpdatedAt   string `db:"updated_at"`
 }
 
 const (

@@ -42,3 +42,25 @@ func (c *UserController) Register(ctx *fiber.Ctx) error {
 		"data":    respData,
 	})
 }
+
+func (c *UserController) Login(ctx *fiber.Ctx) error {
+	var creds entity.Credential
+	if err := ctx.BodyParser(&creds); err != nil {
+		return customErr.NewBadRequestError(err.Error())
+	}
+
+	user, accessToken, err := c.svc.Login(creds)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Status(200).JSON(fiber.Map{
+		"message": "User logged successfully",
+		"data": fiber.Map{
+			"accessToken": accessToken,
+			"name":        user.Name,
+			"phone":       user.Phone,
+			"email":       user.Email,
+		},
+	})
+}

@@ -57,7 +57,8 @@ func registerUserRouter(r fiber.Router, db *sqlx.DB) {
 
 	userGroup := r.Group("/user")
 
-	newRoute(userGroup, "POST", "/", ctr.Register)
+	newRoute(userGroup, "POST", "/register", ctr.Register)
+	newRoute(userGroup, "POST", "/login", ctr.Login)
 }
 
 func newRoute(router fiber.Router, method, path string, handler fiber.Handler) {

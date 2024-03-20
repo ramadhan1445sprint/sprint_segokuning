@@ -9,7 +9,7 @@ import (
 )
 
 type UserRepo interface {
-	GetUser(string, string) (*entity.User, error)
+	GetUser(string, entity.CredType) (*entity.User, error)
 	CreateUser(*entity.RegistrationPayload, string) (string, error)
 }
 
@@ -21,14 +21,14 @@ func NewUserRepo(db *sqlx.DB) UserRepo {
 	return &userRepo{db}
 }
 
-func (r *userRepo) GetUser(credValue, credType string) (*entity.User, error) {
+func (r *userRepo) GetUser(credValue string, credType entity.CredType) (*entity.User, error) {
 	var user entity.User
 
-	statement := "SELECT id, name, created_at FROM users"
+	statement := "SELECT id, name, email, phone, password, image_url, created_at FROM users"
 
-	if credType == string(entity.Email) {
+	if credType == entity.Email {
 		statement += " WHERE email = $1;"
-	} else if credType == string(entity.Phone) {
+	} else if credType == entity.Phone {
 		statement += " WHERE phone = $1;"
 	} else {
 		return nil, customErr.NewBadRequestError("credential type must be email or phone")

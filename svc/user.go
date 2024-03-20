@@ -10,7 +10,7 @@ import (
 )
 
 type UserSvc interface {
-	Login(creds entity.Credential) (*entity.User, error)
+	Login(creds entity.Credential) (*entity.User, string, error)
 	Register(user entity.RegistrationPayload) (string, error)
 }
 
@@ -22,18 +22,39 @@ func NewUserSvc(repo repo.UserRepo) UserSvc {
 	return &userSvc{repo}
 }
 
-func (s *userSvc) Login(creds entity.Credential) (*entity.User, error) {
-	return &entity.User{}, nil
+func (s *userSvc) Login(creds entity.Credential) (*entity.User, string, error) {
+	err := creds.Validate()
+	if err != nil {
+		return nil, "", customErr.NewBadRequestError(err.Error())
+	}
+
+	user, err := s.repo.GetUser(creds.CredentialValue, creds.CredentialType)
+	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			return nil, "", customErr.NewNotFoundError("user not found")
+		}
+		return nil, "", err
+	}
+
+	err = crypto.VerifyPassword(creds.Password, user.Password)
+	if err != nil {
+		return nil, "", customErr.NewBadRequestError("wrong password!")
+	}
+
+	token, err := crypto.GenerateToken(user.Id, user.Name)
+	if err != nil {
+		return nil, "", customErr.NewBadRequestError(err.Error())
+	}
+
+	return user, token, nil
 }
 
 func (s *userSvc) Register(payload entity.RegistrationPayload) (string, error) {
-	// check if credential type not phone or email
 	if payload.CredentialType != entity.Email && payload.CredentialType != entity.Phone {
 		return "", customErr.NewBadRequestError("credential type must be email or phone")
 	}
 
-	// check if credential value is exists
-	existingUser, err := s.repo.GetUser(payload.CredentialValue, string(payload.CredentialType))
+	existingUser, err := s.repo.GetUser(payload.CredentialValue, payload.CredentialType)
 	if err != nil {
 		if err.Error() != "sql: no rows in result set" {
 			return "", err
