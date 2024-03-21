@@ -28,5 +28,3 @@ go.work
 
 # binary
 main
-
-*_test.go
