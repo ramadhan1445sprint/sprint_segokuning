@@ -1,12 +1,10 @@
 package repo
 
 import (
-	// "encoding/json"
 	"encoding/json"
 	"fmt"
 	"strings"
 
-	// "strings"
 
 	"github.com/jackc/pgtype"
 	"github.com/jmoiron/sqlx"
@@ -16,7 +14,6 @@ import (
 type PostRepo interface {
 	CreatePost(post *entity.Post) error
 	GetPost(filter *entity.PostFilter) ([]entity.PostData, error)
-	GetTotalPost() (int, error)
 }
 
 type postRepo struct {
@@ -35,18 +32,6 @@ func (r *postRepo) CreatePost(post *entity.Post) error {
 	}
 
 	return nil
-}
-
-func (r *postRepo) GetTotalPost() (int, error) {
-	var total int
-
-	err := r.db.Get(&total, "SELECT count(*) from posts")
-
-	if err != nil {
-		return 0, err
-	}
-
-	return total, nil
 }
 
 func (r *postRepo) GetPost(filter *entity.PostFilter) ([]entity.PostData, error) {
@@ -91,7 +76,6 @@ func (r *postRepo) GetPost(filter *entity.PostFilter) ([]entity.PostData, error)
 		if err == nil {
 			replacer := strings.NewReplacer("[", "{", "]", "}")
 			stringTag := replacer.Replace(string(jsonTag))
-			fmt.Println(stringTag)
 			if where != "" {
 				where += fmt.Sprintf(" AND tags && '%s'", stringTag)
 			} else {

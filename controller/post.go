@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -26,21 +25,21 @@ func (c *PostController) CreatePost(ctx *fiber.Ctx) error {
 
 	if err := ctx.BodyParser(&postReq); err != nil {
 		custErr := customErr.NewBadRequestError(err.Error())
-		return ctx.Status(custErr.StatusCode).JSON(custErr)
+		return ctx.Status(custErr.StatusCode).JSON(fiber.Map{"message": custErr.Message})
 	}
 
 	if err := c.validate.Struct(postReq); err != nil {
 		validationErrors := err.(validator.ValidationErrors)
 		for _, e := range validationErrors {
 			custErr := customErr.NewBadRequestError(e.Error())
-			return ctx.Status(custErr.StatusCode).JSON(custErr)
+			return ctx.Status(custErr.StatusCode).JSON(fiber.Map{"message": custErr.Message})
 		}
 	}
 
 	postReq.UserID = userId
 
 	if err := c.svc.CreatePost(postReq); err != nil {
-		return ctx.Status(err.StatusCode).JSON(err.Message)
+		return ctx.Status(err.StatusCode).JSON(fiber.Map{"message": err.Message})
 	}
 
 	return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "success"})
@@ -51,14 +50,14 @@ func (c *PostController) GetPost(ctx *fiber.Ctx) error {
 
 	if err := ctx.QueryParser(&filterReq); err != nil {
 		custErr := customErr.NewBadRequestError(err.Error())
-		return ctx.Status(custErr.StatusCode).JSON(custErr)
+		return ctx.Status(custErr.StatusCode).JSON(fiber.Map{"message": custErr.Message})
 	}
 
 	if err := c.validate.Struct(filterReq); err != nil {
 		validationErrors := err.(validator.ValidationErrors)
 		for _, e := range validationErrors {
 			custErr := customErr.NewBadRequestError(e.Error())
-			return ctx.Status(custErr.StatusCode).JSON(custErr)
+			return ctx.Status(custErr.StatusCode).JSON(fiber.Map{"message": custErr.Message})
 		}
 	}
 
@@ -66,12 +65,10 @@ func (c *PostController) GetPost(ctx *fiber.Ctx) error {
 		filterReq.Limit = 5
 	}
 
-	fmt.Println(filterReq)
-
 	resp, err := c.svc.GetPost(filterReq)
 
 	if err != nil {
-		return ctx.Status(err.StatusCode).JSON(err.Message)
+		return ctx.Status(err.StatusCode).JSON(fiber.Map{"message": err.Message})
 	}
 
 	return ctx.Status(http.StatusOK).JSON(resp)

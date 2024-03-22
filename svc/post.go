@@ -37,15 +37,13 @@ func (s *postSvc) GetPost(filter entity.PostFilter) (*entity.PostResponse, *cust
 		return nil, &custErr
 	}
 	
-	total, err := s.repo.GetTotalPost()
-	
 	if err != nil {
 		custErr := customErr.NewInternalServerError(err.Error())
 		return nil, &custErr
 	}
 
 	meta := entity.PostMeta{
-		Total: total,
+		Total: len(resp),
 		Limit: filter.Limit,
 		Offset: filter.Offset,
 	}

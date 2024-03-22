@@ -25,21 +25,21 @@ func (c *CommentController) CreateComment(ctx *fiber.Ctx) error {
 
 	if err := ctx.BodyParser(&commentReq); err != nil {
 		custErr := customErr.NewBadRequestError(err.Error())
-		return ctx.Status(custErr.StatusCode).JSON(custErr)
+		return ctx.Status(custErr.StatusCode).JSON(fiber.Map{"message": custErr.Message})
 	}
 
 	if err := c.validate.Struct(commentReq); err != nil {
 		validationErrors := err.(validator.ValidationErrors)
 		for _, e := range validationErrors {
 			custErr := customErr.NewBadRequestError(e.Error())
-			return ctx.Status(custErr.StatusCode).JSON(custErr)
+			return ctx.Status(custErr.StatusCode).JSON(fiber.Map{"message": custErr.Message})
 		}
 	}
 	
 	commentReq.UserID = userId
 
 	if err := c.svc.CreateComment(commentReq); err != nil {
-		return ctx.Status(err.StatusCode).JSON(err.Message)
+		return ctx.Status(err.StatusCode).JSON(fiber.Map{"message": err.Message})
 	}
 
 	return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "success"})
