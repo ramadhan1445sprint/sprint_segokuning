@@ -5,8 +5,8 @@ CREATE TABLE IF NOT EXISTS friends(
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id1) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (user_id2) REFERENCES users(id) ON DELETE CASCADE,
-  CONSTRAINT check_different_users CHECK (user_id1 <> user_id2)
+  FOREIGN KEY (user_id2) REFERENCES users(id) ON DELETE CASCADE
+  -- CONSTRAINT check_different_users CHECK (user_id1 <> user_id2)
 );
 
 CREATE INDEX IF NOT EXISTS friends_user_id ON friends (user_id1);
