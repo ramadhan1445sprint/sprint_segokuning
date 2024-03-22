@@ -2,7 +2,6 @@ package entity
 
 import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/go-ozzo/ozzo-validation/v4/is"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -43,7 +42,7 @@ func (c *Credential) Validate() error {
 				validation.By(validatePhoneNumberFormat),
 			).Else(
 				validation.Required.Error("email is required"),
-				is.Email.Error("invalid email format"),
+				validation.By(validateEmailFormat),
 			),
 		),
 		validation.Field(&c.Password,

@@ -10,6 +10,7 @@ import (
 
 type UserRepo interface {
 	GetUser(string, entity.CredType) (*entity.User, error)
+	GetUserById(string) (*entity.User, error)
 	CreateUser(*entity.RegistrationPayload, string) (string, error)
 }
 
@@ -38,6 +39,19 @@ func (r *userRepo) GetUser(credValue string, credType entity.CredType) (*entity.
 	if err != nil {
 		return nil, err
 	}
+	return &user, nil
+}
+
+func (r *userRepo) GetUserById(userId string) (*entity.User, error) {
+	var user entity.User
+
+	query := "SELECT id, name, email, phone, password, image_url, created_at FROM users WHERE id = $1"
+
+	err := r.db.Get(&user, query, userId)
+	if err != nil {
+		return nil, err
+	}
+
 	return &user, nil
 }
 
