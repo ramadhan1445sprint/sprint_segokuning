@@ -64,3 +64,57 @@ func (c *UserController) Login(ctx *fiber.Ctx) error {
 		},
 	})
 }
+
+func (c *UserController) UpdateAccountUser(ctx *fiber.Ctx) error {
+	var user entity.UpdateAccountPayload
+	userId := ctx.Locals("user_id").(string)
+
+	if err := ctx.BodyParser(&user); err != nil {
+		return customErr.NewBadRequestError(err.Error())
+	}
+
+	err := c.svc.UpdateAccountUser(user, userId)
+	if err != nil {
+		return err
+	}
+
+	return ctx.JSON(fiber.Map{
+		"message": "account updated successfully",
+	})
+}
+
+func (c *UserController) UpdateLinkEmailAccount(ctx *fiber.Ctx) error {
+	var user entity.LinkEmailPayload
+	userId := ctx.Locals("user_id").(string)
+
+	if err := ctx.BodyParser(&user); err != nil {
+		return customErr.NewBadRequestError(err.Error())
+	}
+
+	err := c.svc.UpdateLinkEmailAccount(user.Email, userId)
+	if err != nil {
+		return err
+	}
+
+	return ctx.JSON(fiber.Map{
+		"message": "email linked successfully",
+	})
+}
+
+func (c *UserController) UpdateLinkPhoneAccount(ctx *fiber.Ctx) error {
+	var user entity.LinkPhonePayload
+	userId := ctx.Locals("user_id").(string)
+
+	if err := ctx.BodyParser(&user); err != nil {
+		return customErr.NewBadRequestError(err.Error())
+	}
+
+	err := c.svc.UpdateLinkPhoneAccount(user.Phone, userId)
+	if err != nil {
+		return err
+	}
+
+	return ctx.JSON(fiber.Map{
+		"message": "phone linked successfully",
+	})
+}

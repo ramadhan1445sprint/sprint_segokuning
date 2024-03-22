@@ -12,6 +12,8 @@ type UserRepo interface {
 	GetUser(string, entity.CredType) (*entity.User, error)
 	GetUserById(string) (*entity.User, error)
 	CreateUser(*entity.RegistrationPayload, string) (string, error)
+	UpdateAccountUser(user entity.UpdateAccountPayload, userId string) error
+	UpdateLinkAccount(credential string, userId string, credentialType string) error
 }
 
 type userRepo struct {
@@ -70,4 +72,33 @@ func (r *userRepo) CreateUser(user *entity.RegistrationPayload, hashPassword str
 	}
 
 	return id, nil
+}
+
+func (r *userRepo) UpdateAccountUser(user entity.UpdateAccountPayload, userId string) error {
+	query := "UPDATE users SET name = $1, image_url = $2 WHERE id = $3"
+
+	_, err := r.db.Exec(query, user.Name, user.ImageUrl, userId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *userRepo) UpdateLinkAccount(credential string, userId string, credentialType string) error {
+	var query string
+
+	if credentialType == "phone" {
+		query = "UPDATE users SET phone = $1 WHERE id = $2"
+	} else if credentialType == "email" {
+		query = "UPDATE users SET email = $1 WHERE id = $2"
+	}
+
+	_, err := r.db.Exec(query, credential, userId)
+	if err != nil {
+		fmt.Print(err)
+		return err
+	}
+
+	return nil
 }

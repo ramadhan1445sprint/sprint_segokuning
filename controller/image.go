@@ -18,6 +18,9 @@ func NewImageController(svc svc.ImageSvc) *ImageController {
 
 func (c *ImageController) UploadImage(ctx *fiber.Ctx) error {
 	fileHeader, err := ctx.FormFile("file")
+	if fileHeader == nil {
+		return customErr.NewBadRequestError("file should not be empty")
+	}
 	if err != nil {
 		return customErr.NewInternalServerError("failed to retrieve file")
 	}

@@ -4,7 +4,8 @@ import (
 	"errors"
 	"regexp"
 
-	"github.com/go-ozzo/ozzo-validation/v4"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
 
 type CredType string
@@ -25,6 +26,27 @@ const (
 	Phone CredType = "phone"
 	Email CredType = "email"
 )
+
+type UpdateAccountPayload struct {
+	ImageUrl string `db:"image_url" json:"imageUrl"`
+	Name     string `db:"name" json:"name"`
+}
+
+type LinkEmailPayload struct {
+	Email string `db:"email" json:"email,omitempty"`
+}
+
+type LinkPhonePayload struct {
+	Phone string `db:"phone" json:"phone,omitempty"`
+}
+
+type UserList struct {
+	Id          string  `json:"userId"`
+	Name        string  `json:"name"`
+	ImageUrl    *string `db:"image_url" json:"imageUrl"`
+	FriendCount int     `db:"friend_count" json:"friendCount"`
+	CreatedAt   string  `db:"created_at" json:"createdAt"`
+}
 
 func NewUser(credType CredType, credValue, name, password string) *User {
 	u := &User{
@@ -69,6 +91,64 @@ func (u *User) Validate(credentialType CredType) error {
 	return err
 }
 
+func (u *UpdateAccountPayload) Validate() error {
+	err := validation.ValidateStruct(u,
+		validation.Field(&u.Name,
+			validation.Required.Error("name is required"),
+			validation.Length(5, 50).Error("name must be between 5 and 50 characters"),
+		),
+		validation.Field(&u.ImageUrl,
+			validation.Required.Error("image is required"),
+			is.URL.Error("image must be url"),
+			validation.By(validateImage),
+		),
+	)
+
+	return err
+}
+
+func ValidateEmail(email string) error {
+	err := validation.Validate(email,
+		validation.Required.Error("email is required"),
+		validation.By(validateEmailFormat),
+	)
+
+	return err
+}
+
+// func (u *LinkEmailPayload) Validate() error {
+// 	err := validation.ValidateStruct(u,
+// 		validation.Field(&u.Email,
+// 			validation.Required.Error("email is required"),
+// 			validation.By(validateEmailFormat),
+// 		),
+// 	)
+
+// 	return err
+// }
+
+func ValidatePhone(phone string) error {
+	err := validation.Validate(phone,
+		validation.Required.Error("phone is required"),
+		validation.Length(7, 13).Error("phone must between 7 and 13 digits with country code"),
+		validation.By(validatePhoneNumberFormat),
+	)
+
+	return err
+}
+
+// func (u *LinkPhonePayload) Validate() error {
+// 	err := validation.ValidateStruct(u,
+// 		validation.Field(&u.Phone,
+// 			validation.Required.Error("phone is required"),
+// 			validation.Length(7, 13).Error("phone must between 7 and 13 digits with country code"),
+// 			validation.By(validatePhoneNumberFormat),
+// 		),
+// 	)
+
+// 	return err
+// }
+
 func ValidateName(name string) error {
 	err := validation.Validate(name,
 		validation.Required.Error("name is required"),
@@ -76,6 +156,18 @@ func ValidateName(name string) error {
 	)
 
 	return err
+}
+
+func validateImage(value any) error {
+	image, _ := value.(string)
+
+	pattern := `http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+.(?:jpg|jpeg|png|gif|bmp|webp|svg)$`
+	rgx := regexp.MustCompile(pattern)
+	if !rgx.MatchString(image) {
+		return errors.New("invalid image format")
+	}
+
+	return nil
 }
 
 func validatePhoneNumberFormat(value any) error {

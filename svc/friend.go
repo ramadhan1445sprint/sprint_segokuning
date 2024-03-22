@@ -3,12 +3,14 @@ package svc
 import (
 	"github.com/google/uuid"
 	"github.com/ramadhan1445sprint/sprint_segokuning/customErr"
+	"github.com/ramadhan1445sprint/sprint_segokuning/entity"
 	"github.com/ramadhan1445sprint/sprint_segokuning/repo"
 )
 
-type FriendSvc interface{
+type FriendSvc interface {
 	AddFriend(string, string) error
 	DeleteFriend(string, string) error
+	GetListFriends(*entity.ListFriendPayload) ([]entity.UserList, *entity.Meta, error)
 }
 
 type friendSvc struct {
@@ -95,4 +97,20 @@ func (s *friendSvc) DeleteFriend(userId, friendId string) error {
 	}
 
 	return nil
+}
+
+func (r *friendSvc) GetListFriends(param *entity.ListFriendPayload) ([]entity.UserList, *entity.Meta, error) {
+	// validate list
+	var listUser []entity.UserList
+
+	if err := param.Validate(); err != nil {
+		return listUser, nil, customErr.NewBadRequestError(err.Error())
+	}
+
+	listUser, meta, err := r.friendRepo.GetListFriends(param)
+	if err != nil {
+		return listUser, nil, err
+	}
+
+	return listUser, meta, err
 }

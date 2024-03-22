@@ -50,3 +50,25 @@ func (c *FriendController) DeleteFriend(ctx *fiber.Ctx) error {
 		"message": "Delete Friend Success!",
 	})
 }
+
+func (c *FriendController) GetListFriends(ctx *fiber.Ctx) error {
+	var param entity.ListFriendPayload
+	ctx.QueryParser(&param)
+
+	param = entity.NewListFriend(param.OrderBy, param.OnlyFriend, param.SortBy, param.Search, param.Limit, param.Offset)
+
+	if param.OnlyFriend {
+		param.UserId = ctx.Locals("user_id").(string)
+	}
+
+	friends, meta, err := c.svc.GetListFriends(&param)
+	if err != nil {
+		return err
+	}
+
+	return ctx.JSON(fiber.Map{
+		"message": "",
+		"data":    friends,
+		"meta":    meta,
+	})
+}
