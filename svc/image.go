@@ -40,7 +40,9 @@ func (i *imageSvc) UploadImage(fileHeader *multipart.FileHeader) (string, error)
 		return "", customErr.NewBadRequestError("file size must be between 10KB and 2MB")
 	}
 	if fileHeader.Header["Content-Type"][0] != "image/jpeg" {
-		return "", customErr.NewBadRequestError("file must be in JPEG format")
+		if fileExt != "jpg" && fileExt != "jpeg" {
+			return "", customErr.NewBadRequestError("file must be in JPEG format")
+		}
 	}
 
 	file, err := fileHeader.Open()
@@ -57,6 +59,7 @@ func (i *imageSvc) UploadImage(fileHeader *multipart.FileHeader) (string, error)
 
 	_, err = i.s3Client.PutObject(context.TODO(), input)
 	if err != nil {
+		fmt.Print("4", err)
 		return "", err
 	}
 

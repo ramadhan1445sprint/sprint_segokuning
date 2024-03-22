@@ -100,6 +100,7 @@ func (u *UpdateAccountPayload) Validate() error {
 		validation.Field(&u.ImageUrl,
 			validation.Required.Error("image is required"),
 			is.URL.Error("image must be url"),
+			validation.By(validateImage),
 		),
 	)
 
@@ -155,6 +156,18 @@ func ValidateName(name string) error {
 	)
 
 	return err
+}
+
+func validateImage(value any) error {
+	image, _ := value.(string)
+
+	pattern := `http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+.(?:jpg|jpeg|png|gif|bmp|webp|svg)$`
+	rgx := regexp.MustCompile(pattern)
+	if !rgx.MatchString(image) {
+		return errors.New("invalid image format")
+	}
+
+	return nil
 }
 
 func validatePhoneNumberFormat(value any) error {
