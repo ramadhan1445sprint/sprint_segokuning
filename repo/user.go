@@ -10,9 +10,9 @@ import (
 
 type UserRepo interface {
 	GetUser(string, entity.CredType) (*entity.User, error)
+	GetUserById(string) (*entity.User, error)
 	CreateUser(*entity.RegistrationPayload, string) (string, error)
 	UpdateAccountUser(user entity.UpdateAccountPayload, userId string) error
-	GetUserById(userId string) (*entity.User, error)
 	UpdateLinkAccount(credential string, userId string, credentialType string) error
 }
 
@@ -44,6 +44,19 @@ func (r *userRepo) GetUser(credValue string, credType entity.CredType) (*entity.
 	return &user, nil
 }
 
+func (r *userRepo) GetUserById(userId string) (*entity.User, error) {
+	var user entity.User
+
+	query := "SELECT id, name, email, phone, password, image_url, created_at FROM users WHERE id = $1"
+
+	err := r.db.Get(&user, query, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func (r *userRepo) CreateUser(user *entity.RegistrationPayload, hashPassword string) (string, error) {
 	var id string
 
@@ -70,19 +83,6 @@ func (r *userRepo) UpdateAccountUser(user entity.UpdateAccountPayload, userId st
 	}
 
 	return nil
-}
-
-func (r *userRepo) GetUserById(userId string) (*entity.User, error) {
-	var user entity.User
-
-	query := "SELECT id, name, email, phone, password, image_url, created_at FROM users WHERE id = $1"
-
-	err := r.db.Get(&user, query, userId)
-	if err != nil {
-		return nil, err
-	}
-
-	return &user, nil
 }
 
 func (r *userRepo) UpdateLinkAccount(credential string, userId string, credentialType string) error {

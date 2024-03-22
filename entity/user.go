@@ -83,7 +83,7 @@ func (u *User) Validate(credentialType CredType) error {
 		validation.Field(&u.Email,
 			validation.When(credentialType == Email,
 				validation.Required.Error("email is required"),
-				is.Email.Error("invalid email format"),
+				validation.By(validateEmailFormat),
 			),
 		),
 	)

@@ -65,3 +65,13 @@ func NewListFriend(orderBy string, onlyFriend bool, sortBy FriendSortBy, search 
 		OrderBy:    orderBy,
 	}
 }
+
+type FriendPair struct {
+	FriendPairId string `db:"id"`
+	FriendIdA    string `db:"user_id1"`
+	FriendIdZ    string `db:"user_id2"`
+}
+
+type AddDeleteFriendPayload struct {
+	FriendId string `json:"userId"`
+}

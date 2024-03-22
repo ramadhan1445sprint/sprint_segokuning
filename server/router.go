@@ -20,6 +20,7 @@ func (s *Server) RegisterRoute() {
 
 	registerHealthRoute(mainRoute, s.db)
 	registerUserRouter(mainRoute, s.db)
+	registerFriendRouter(mainRoute, s.db)
 	registerImageRoute(mainRoute)
 	registerFriendRouter(mainRoute, s.db)
 }
@@ -29,13 +30,6 @@ func registerHealthRoute(r fiber.Router, db *sqlx.DB) {
 
 	newRoute(r, "GET", "/health", ctr.HealthCheck)
 	newRouteWithAuth(r, "GET", "/auth", ctr.AuthCheck)
-}
-
-func registerFriendRouter(r fiber.Router, db *sqlx.DB) {
-	ctr := controller.NewFriendController(svc.NewFriendService(repo.NewFriendRepo(db)))
-	userGroup := r.Group("/friend")
-
-	newRouteWithAuth(userGroup, "GET", "/", ctr.GetListFriends)
 }
 
 func registerImageRoute(r fiber.Router) {
@@ -69,6 +63,16 @@ func registerUserRouter(r fiber.Router, db *sqlx.DB) {
 	newRouteWithAuth(userGroup, "PATCH", "", ctr.UpdateAccountUser)
 	newRouteWithAuth(userGroup, "POST", "link", ctr.UpdateLinkEmailAccount)
 	newRouteWithAuth(userGroup, "POST", "link/phone", ctr.UpdateLinkPhoneAccount)
+}
+
+func registerFriendRouter(r fiber.Router, db *sqlx.DB) {
+	ctr := controller.NewFriendController(svc.NewFriendSvc(repo.NewUserRepo(db), repo.NewFriendRepo(db)))
+
+	friendGroup := r.Group("/friend")
+
+	newRouteWithAuth(friendGroup, "POST", "/", ctr.AddFriend)
+	newRouteWithAuth(friendGroup, "DELETE", "/", ctr.DeleteFriend)
+	newRouteWithAuth(friendGroup, "GET", "/", ctr.GetListFriends)
 }
 
 func newRoute(router fiber.Router, method, path string, handler fiber.Handler) {

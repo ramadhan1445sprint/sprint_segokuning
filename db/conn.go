@@ -9,21 +9,14 @@ import (
 )
 
 func NewDatabase() (*sqlx.DB, error) {
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s",
-		config.GetString("DB_HOST"),
-		config.GetString("DB_PORT"),
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?%s",
 		config.GetString("DB_USERNAME"),
 		config.GetString("DB_PASSWORD"),
+		config.GetString("DB_HOST"),
+		config.GetString("DB_PORT"),
 		config.GetString("DB_NAME"),
+		config.GetString("DB_PARAMS"),
 	)
-
-	env := config.GetString("ENV")
-
-	if env == "production" {
-		dsn += " sslmode=verify-full rootcert=ap-southeast-1-bundle.pem"
-	} else {
-		dsn += " sslmode=disable"
-	}
 
 	db, err := sqlx.Connect("pgx", dsn)
 
