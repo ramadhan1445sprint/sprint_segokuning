@@ -109,11 +109,22 @@ func (u *UpdateAccountPayload) Validate() error {
 func ValidateEmail(email string) error {
 	err := validation.Validate(email,
 		validation.Required.Error("email is required"),
-		is.Email.Error("email must be valid"),
+		validation.By(validateEmailFormat),
 	)
 
 	return err
 }
+
+// func (u *LinkEmailPayload) Validate() error {
+// 	err := validation.ValidateStruct(u,
+// 		validation.Field(&u.Email,
+// 			validation.Required.Error("email is required"),
+// 			validation.By(validateEmailFormat),
+// 		),
+// 	)
+
+// 	return err
+// }
 
 func ValidatePhone(phone string) error {
 	err := validation.Validate(phone,
@@ -124,6 +135,18 @@ func ValidatePhone(phone string) error {
 
 	return err
 }
+
+// func (u *LinkPhonePayload) Validate() error {
+// 	err := validation.ValidateStruct(u,
+// 		validation.Field(&u.Phone,
+// 			validation.Required.Error("phone is required"),
+// 			validation.Length(7, 13).Error("phone must between 7 and 13 digits with country code"),
+// 			validation.By(validatePhoneNumberFormat),
+// 		),
+// 	)
+
+// 	return err
+// }
 
 func ValidateName(name string) error {
 	err := validation.Validate(name,

@@ -61,8 +61,8 @@ func registerUserRouter(r fiber.Router, db *sqlx.DB) {
 	newRoute(userGroup, "POST", "/register", ctr.Register)
 	newRoute(userGroup, "POST", "/login", ctr.Login)
 	newRouteWithAuth(userGroup, "PATCH", "", ctr.UpdateAccountUser)
-	newRouteWithAuth(userGroup, "POST", "link", ctr.UpdateLinkEmailAccount)
-	newRouteWithAuth(userGroup, "POST", "link/phone", ctr.UpdateLinkPhoneAccount)
+	newRouteWithAuth(userGroup, "POST", "/link", ctr.UpdateLinkEmailAccount)
+	newRouteWithAuth(userGroup, "POST", "/link/phone", ctr.UpdateLinkPhoneAccount)
 }
 
 func registerFriendRouter(r fiber.Router, db *sqlx.DB) {

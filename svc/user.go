@@ -112,6 +112,15 @@ func (s *userSvc) UpdateLinkEmailAccount(email string, userId string) error {
 		return customErr.NewBadRequestError(err.Error())
 	}
 
+	user, err := s.repo.GetUserById(userId)
+	if err != nil {
+		return err
+	}
+
+	if user.Email != "" {
+		return customErr.NewBadRequestError("email already linked")
+	}
+
 	// check duplicate email
 	existingUser, err := s.repo.GetUser(email, "email")
 	if err != nil {
@@ -120,23 +129,11 @@ func (s *userSvc) UpdateLinkEmailAccount(email string, userId string) error {
 		}
 	}
 
-	if existingUser.Id == userId && existingUser.Email != "" {
-		return customErr.NewBadRequestError("email already linked")
-	}
-
 	if existingUser != nil {
-		return customErr.NewConflictError("email already exists")
+		if existingUser.Id != userId {
+			return customErr.NewConflictError("email already exist")
+		}
 	}
-
-	// // check user already linked email
-	// // user, err := s.repo.GetUserById(userId)
-	// // if err != nil {
-	// // 	return err
-	// // }
-
-	// if user.Email != "" {
-	// 	return customErr.NewBadRequestError("email already linked")
-	// }
 
 	if err := s.repo.UpdateLinkAccount(email, userId, "email"); err != nil {
 		return customErr.NewInternalServerError(err.Error())
@@ -151,6 +148,15 @@ func (s *userSvc) UpdateLinkPhoneAccount(phone string, userId string) error {
 		return customErr.NewBadRequestError(err.Error())
 	}
 
+	user, err := s.repo.GetUserById(userId)
+	if err != nil {
+		return err
+	}
+
+	if user.Phone != "" {
+		return customErr.NewBadRequestError("phone already linked")
+	}
+
 	// check duplicate phone
 	existingUser, err := s.repo.GetUser(phone, "phone")
 	if err != nil {
@@ -159,23 +165,11 @@ func (s *userSvc) UpdateLinkPhoneAccount(phone string, userId string) error {
 		}
 	}
 
-	if existingUser.Id == userId && existingUser.Phone != "" {
-		return customErr.NewBadRequestError("phone already linked")
-	}
-
 	if existingUser != nil {
-		return customErr.NewConflictError("phone already exist")
+		if existingUser.Id != userId {
+			return customErr.NewConflictError("phone already exist")
+		}
 	}
-
-	// check user already linked phone
-	// user, err := s.repo.GetUserById(userId)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// if user.Phone != "" {
-	// 	return customErr.NewBadRequestError("phone already linked")
-	// }
 
 	if err := s.repo.UpdateLinkAccount(phone, userId, "phone"); err != nil {
 		return customErr.NewInternalServerError(err.Error())

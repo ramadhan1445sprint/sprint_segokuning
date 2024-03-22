@@ -96,6 +96,7 @@ func (r *userRepo) UpdateLinkAccount(credential string, userId string, credentia
 
 	_, err := r.db.Exec(query, credential, userId)
 	if err != nil {
+		fmt.Print(err)
 		return err
 	}
 
