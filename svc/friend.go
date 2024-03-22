@@ -23,14 +23,14 @@ func NewFriendSvc(userRepo repo.UserRepo, friendRepo repo.FriendRepo) FriendSvc 
 }
 
 func (s *friendSvc) AddFriend(userId, friendId string) error {
-	if userId == friendId {
-		return customErr.NewBadRequestError("cannot add yourself as friend")
+	if err := entity.ValidateUserId(friendId); err != nil {
+		return customErr.NewBadRequestError("invalid friend id format")
 	}
 
 	// check id is valid
 	err := uuid.Validate(friendId)
 	if err != nil {
-		return customErr.NewBadRequestError("invalid friend id format")
+		return customErr.NewNotFoundError("invalid friend id format")
 	}
 
 	// check friend is exist

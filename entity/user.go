@@ -158,6 +158,14 @@ func ValidateName(name string) error {
 	return err
 }
 
+func ValidateUserId(id string) error {
+	err := validation.Validate(id,
+		validation.Required.Error("user id is required"),
+	)
+
+	return err
+}
+
 func validateImage(value any) error {
 	image, _ := value.(string)
 
