@@ -54,6 +54,13 @@ func (s *userSvc) Register(payload entity.RegistrationPayload) (string, error) {
 		return "", customErr.NewBadRequestError("credential type must be email or phone")
 	}
 
+	user := entity.NewUser(payload.CredentialType, payload.CredentialValue, payload.Name, payload.Password)
+
+	err := user.Validate(payload.CredentialType)
+	if err != nil {
+		return "", customErr.NewBadRequestError(err.Error())
+	}
+
 	existingUser, err := s.repo.GetUser(payload.CredentialValue, payload.CredentialType)
 	if err != nil {
 		if err.Error() != "sql: no rows in result set" {
@@ -64,13 +71,6 @@ func (s *userSvc) Register(payload entity.RegistrationPayload) (string, error) {
 	if existingUser != nil {
 		errMsg := fmt.Sprintf("user with %s %s already exists", payload.CredentialType, payload.CredentialValue)
 		return "", customErr.NewConflictError(errMsg)
-	}
-
-	user := entity.NewUser(payload.CredentialType, payload.CredentialValue, payload.Name, payload.Password)
-
-	err = user.Validate(payload.CredentialType)
-	if err != nil {
-		return "", customErr.NewBadRequestError(err.Error())
 	}
 
 	hashedPassword, err := crypto.GenerateHashedPassword(payload.Password)
