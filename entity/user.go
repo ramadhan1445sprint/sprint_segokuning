@@ -40,6 +40,14 @@ type LinkPhonePayload struct {
 	Phone string `db:"phone" json:"phone,omitempty"`
 }
 
+type UserList struct {
+	Id          string  `json:"userId"`
+	Name        string  `json:"name"`
+	ImageUrl    *string `db:"image_url" json:"imageUrl"`
+	FriendCount int     `db:"friend_count" json:"friendCount"`
+	CreatedAt   string  `db:"created_at" json:"createdAt"`
+}
+
 func NewUser(credType CredType, credValue, name, password string) *User {
 	u := &User{
 		Name:     name,
