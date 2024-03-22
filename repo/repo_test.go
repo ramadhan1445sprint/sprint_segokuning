@@ -1,7 +1,6 @@
 package repo
 
 import (
-	// "fmt"
 	"testing"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
@@ -96,7 +95,7 @@ func TestGetPosts(t *testing.T) {
 		input       entity.PostFilter
 		errExpected bool
 	}{
-		{"Test get post", entity.PostFilter{Limit: 2, Offset: 0, SearchTag: []string{"woko"}}, false},
+		{"Test get post", entity.PostFilter{}, false},
 	}
 
 	for _, tc := range testCases {

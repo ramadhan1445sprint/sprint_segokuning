@@ -1,10 +1,12 @@
 package entity
 
+import "github.com/jackc/pgtype"
+
 type Post struct {
 	ID         string   `json:"postId"`
 	UserID     string   `json:"user_id"`
-	PostInHtml string   `json:"postInHtml" db:"post_in_html"`
-	Tags       []string `json:"tags"`
+	PostInHtml string   `json:"postInHtml" db:"post_in_html" validate:"required,min=2,max=500"`
+	Tags       []string `json:"tags" validate:"required"`
 	CreatedAt  string   `json:"createdAt" db:"created_at"`
 	UpdatedAt  string   `json:"updatedAt,omitempty"`
 }
@@ -12,14 +14,14 @@ type Post struct {
 type PostData struct {
 	PostId   string         `json:"postId"`
 	Post     PostDetail     `json:"post"`
-	Comments []PostComments `json:"comment"`
+	Comments []PostComments `json:"comments"`
 	Creator  PostUser       `json:"creator"`
 }
 
 type PostDetail struct {
-	PostInHtml string      `json:"postInHtml"`
-	Tags       interface{} `json:"tags"`
-	CreatedAt  string      `json:"created_at"`
+	PostInHtml string              `json:"postInHtml"`
+	Tags       []string `json:"tags"`
+	CreatedAt  string              `json:"created_at"`
 }
 
 type PostComments struct {
@@ -39,7 +41,7 @@ type PostUser struct {
 type PostRawDBData struct {
 	PostID                    string      `json:"postId" db:"post_id"`
 	PostInHTML                string      `json:"postInHtml" db:"post_in_html"`
-	Tags                      interface{} `json:"tags" db:"posts_tags"`
+	Tags                      pgtype.VarcharArray `json:"tags" db:"posts_tags"`
 	PostCreatedAt             string      `json:"postCreatedAt" db:"posts_created_at"`
 	CreatorID                 string      `json:"creatorId" db:"creator_id"`
 	CreatorName               string      `json:"creatorName" db:"creator_name"`
@@ -55,14 +57,21 @@ type PostRawDBData struct {
 }
 
 type PostFilter struct {
-	Limit     int      `json:"limit"`
-	Offset    int      `json:"offset"`
+	Limit     int      `json:"limit" validate:"numeric" schema:"limit"`
+	Offset    int      `json:"offset" validate:"numeric" schema:"limit"`
 	Search    string   `json:"search"`
 	SearchTag []string `json:"searchTag"`
 }
 
-type Meta struct {
+type PostMeta struct {
 	Limit  int `json:"limit"`
 	Offset int `json:"offset"`
 	Total  int `json:"total"`
+
+}
+
+type PostResponse struct {
+	Message string     `json:"message"`
+	Data    []PostData `json:"data"`
+	Meta    PostMeta   `json:"meta"`
 }

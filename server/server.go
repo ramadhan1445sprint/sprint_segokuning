@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/adaptor"
 	"github.com/gofiber/fiber/v2/middleware/recover"
@@ -12,12 +13,14 @@ import (
 type Server struct {
 	db  *sqlx.DB
 	app *fiber.App
+	validator *validator.Validate
 }
 
 func NewServer(db *sqlx.DB) *Server {
 	app := fiber.New(fiber.Config{
 		ErrorHandler: middleware.ErrorHandler,
 	})
+	validate := validator.New()
 
 	app.Use(recover.New())
 	app.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
@@ -25,6 +28,7 @@ func NewServer(db *sqlx.DB) *Server {
 	return &Server{
 		db:  db,
 		app: app,
+		validator: validate,
 	}
 }
 

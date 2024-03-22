@@ -1,10 +1,14 @@
 package repo
 
 import (
+	// "encoding/json"
 	"encoding/json"
 	"fmt"
 	"strings"
 
+	// "strings"
+
+	"github.com/jackc/pgtype"
 	"github.com/jmoiron/sqlx"
 	"github.com/ramadhan1445sprint/sprint_segokuning/entity"
 )
@@ -13,8 +17,6 @@ type PostRepo interface {
 	CreatePost(post *entity.Post) error
 	GetPost(filter *entity.PostFilter) ([]entity.PostData, error)
 	GetTotalPost() (int, error)
-	CheckPostById(postId string) (bool, error)
-	CheckFriendPost(postId string, userId string) (bool, error)
 }
 
 type postRepo struct {
@@ -38,50 +40,13 @@ func (r *postRepo) CreatePost(post *entity.Post) error {
 func (r *postRepo) GetTotalPost() (int, error) {
 	var total int
 
-	err := r.db.Get(total, "SELECT count(*) from posts")
+	err := r.db.Get(&total, "SELECT count(*) from posts")
 
 	if err != nil {
 		return 0, err
 	}
 
 	return total, nil
-}
-
-func (r *postRepo) CheckPostById(postId string) (bool, error) {
-	var exist int
-
-	err := r.db.Get(exist, "SELECT count(*) from posts where id = $1", postId)
-
-	if err != nil {
-		return false, err
-	}
-
-	if exist > 0 {
-		return true, nil
-	}
-
-	return false, nil
-
-}
-func (r *postRepo) CheckFriendPost(postId string, userId string) (bool, error) {
-	var creator string
-	var exist int
-
-	err := r.db.Get(creator, "SELECT user_id from posts where id = $1", postId)
-	if err != nil {
-		return false, err
-	}
-
-	err = r.db.Get(creator, "SELECT count(*) from posts where (userid1 = $1 and userid2 = $2) or (userid1 = $3 and userid2 = $4)", userId, creator, creator, userId)
-	if err != nil {
-		return false, err
-	}
-
-	if exist > 0 {
-		return true, nil
-	}
-
-	return false, nil
 }
 
 func (r *postRepo) GetPost(filter *entity.PostFilter) ([]entity.PostData, error) {
@@ -121,11 +86,12 @@ func (r *postRepo) GetPost(filter *entity.PostFilter) ([]entity.PostData, error)
 		}
 	}
 
-	if len(filter.SearchTag) > 0 {
+	if len(filter.SearchTag) > 0 {	
 		jsonTag, err := json.Marshal([]string(filter.SearchTag))
 		if err == nil {
 			replacer := strings.NewReplacer("[", "{", "]", "}")
 			stringTag := replacer.Replace(string(jsonTag))
+			fmt.Println(stringTag)
 			if where != "" {
 				where += fmt.Sprintf(" AND tags && '%s'", stringTag)
 			} else {
@@ -135,7 +101,6 @@ func (r *postRepo) GetPost(filter *entity.PostFilter) ([]entity.PostData, error)
 	}
 	query += where
 	query += fmt.Sprintf(" ORDER BY p.created_at DESC, c.created_at desc limit %d offset %d", filter.Limit, filter.Offset)
-	fmt.Print(query)
 
 	rows, err := r.db.Query(query)
 
@@ -164,7 +129,15 @@ func (r *postRepo) GetPost(filter *entity.PostFilter) ([]entity.PostData, error)
 
 		tempPostData.PostId = postRawDBData.PostID
 		tempPostDetail.PostInHtml = postRawDBData.PostInHTML
-		tempPostDetail.Tags = postRawDBData.Tags
+
+		var tagsSlice []string
+		for _, tag := range postRawDBData.Tags.Elements {
+			if tag.Status != pgtype.Null {
+				tagsSlice = append(tagsSlice, string(tag.String))
+			}
+		}
+
+		tempPostDetail.Tags = tagsSlice
 		tempPostDetail.CreatedAt = postRawDBData.PostCreatedAt
 		tempPostData.Post = tempPostDetail
 
@@ -216,7 +189,11 @@ func (r *postRepo) GetPost(filter *entity.PostFilter) ([]entity.PostData, error)
 
 	for key, _ := range postMap {
 		temp := postMap[key]
-		temp.Comments = postMapComment[key]
+		if postMapComment[key] == nil {
+			temp.Comments = []entity.PostComments{}
+		}else {
+			temp.Comments = postMapComment[key]
+		}
 		postData = append(postData, temp)
 	}
 
