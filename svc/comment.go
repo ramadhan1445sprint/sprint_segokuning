@@ -1,7 +1,6 @@
 package svc
 
 import (
-	"fmt"
 
 	"github.com/ramadhan1445sprint/sprint_segokuning/customErr"
 	"github.com/ramadhan1445sprint/sprint_segokuning/entity"
