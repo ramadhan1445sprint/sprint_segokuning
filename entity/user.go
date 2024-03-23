@@ -5,7 +5,6 @@ import (
 	"regexp"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
 
 type CredType string
@@ -99,7 +98,7 @@ func (u *UpdateAccountPayload) Validate() error {
 		),
 		validation.Field(&u.ImageUrl,
 			validation.Required.Error("image is required"),
-			is.URL.Error("image must be url"),
+			// is.URL.Error("image must be url"),
 			validation.By(validateImage),
 		),
 	)

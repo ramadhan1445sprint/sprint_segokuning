@@ -20,8 +20,8 @@ type ListFriendPayload struct {
 	Search     string       `schema:"search" binding:"omitempty"`
 	Limit      int          `schema:"limit" binding:"omitempty"`
 	Offset     int          `schema:"offset" binding:"omitempty"`
-	SortBy     FriendSortBy `schema:"sortby" binding:"omitempty"`
-	OrderBy    string       `schema:"orderby" binding:"omitempty"`
+	SortBy     FriendSortBy `schema:"sortBy" binding:"omitempty"`
+	OrderBy    string       `schema:"orderBy" binding:"omitempty"`
 }
 
 type Meta struct {
@@ -34,7 +34,10 @@ func (r ListFriendPayload) Validate() error {
 	err := validation.ValidateStruct(&r,
 		validation.Field(&r.UserId, validation.When(r.OnlyFriend, validation.Required.Error("userId is required"))),
 		validation.Field(&r.OrderBy, validation.In("asc", "desc")),
-		validation.Field(&r.SortBy, validation.In(friendSortBys...)),
+		validation.Field(&r.SortBy, validation.In(SortByCreatedAt, SortByFriendCount)),
+		validation.Field(&r.Limit, validation.Min(0)),
+		validation.Field(&r.Offset, validation.Min(0)),
+		validation.Field(&r.OnlyFriend, validation.In(true, false)),
 	)
 
 	return err

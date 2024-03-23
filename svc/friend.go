@@ -103,10 +103,6 @@ func (r *friendSvc) GetListFriends(param *entity.ListFriendPayload) ([]entity.Us
 	// validate list
 	var listUser []entity.UserList
 
-	if err := param.Validate(); err != nil {
-		return listUser, nil, customErr.NewBadRequestError(err.Error())
-	}
-
 	listUser, meta, err := r.friendRepo.GetListFriends(param)
 	if err != nil {
 		return listUser, nil, err

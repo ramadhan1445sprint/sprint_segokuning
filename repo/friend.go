@@ -113,17 +113,17 @@ func (r *friendRepo) DeleteFriend(userId, friendId string) (err error) {
 	return err
 }
 
-func (r *friendRepo) GetListFriends(param *entity.ListFriendPayload) ([]entity.UserList, *entity.Meta, error) {
+func GetQueryOnlyFriend(param *entity.ListFriendPayload, joinState string, userOnlyStatement string) string {
 	var conditions []string
 
 	joinStatement := ""
 	if param.OnlyFriend && param.UserId != "" {
-		conditions = append(conditions, fmt.Sprintf("users.id = '%s'", param.UserId))
-		joinStatement = fmt.Sprintf("JOIN friends ON users.id = friends.user_id1 OR users.id = friends.user_id2")
+		conditions = append(conditions, userOnlyStatement)
+		joinStatement = joinState
 	}
 
 	if param.Search != "" {
-		conditions = append(conditions, fmt.Sprintf("users.name LIKE '%%%s%%'", param.Search))
+		conditions = append(conditions, fmt.Sprintf("u.name LIKE '%%%s%%'", param.Search))
 	}
 
 	whereClause := ""
@@ -132,24 +132,80 @@ func (r *friendRepo) GetListFriends(param *entity.ListFriendPayload) ([]entity.U
 	}
 
 	if param.SortBy == entity.SortByCreatedAt {
-		param.SortBy = "users.created_at"
+		param.SortBy = "u.created_at"
 	} else {
-		param.SortBy = "users.friend_count"
+		param.SortBy = "u.friend_count"
 	}
 
 	query := fmt.Sprintf(`
-        SELECT users.id, users.name, users.image_url, users.friend_count, users.created_at
-        FROM users
+        SELECT u.id, u.name, u.image_url, u.friend_count, u.created_at
+        FROM users u
 				%s
 				%s
 				ORDER BY %s %s
 				LIMIT %d OFFSET %d`, joinStatement, whereClause, param.SortBy, param.OrderBy, param.Limit, param.Offset)
 
+	return query
+}
+
+func GetQueryParam(param *entity.ListFriendPayload) string {
+	var conditions []string
+
+	if param.Search != "" {
+		conditions = append(conditions, fmt.Sprintf("u.name LIKE '%%%s%%'", param.Search))
+	}
+
+	whereClause := ""
+	if len(conditions) > 0 {
+		whereClause = "WHERE " + strings.Join(conditions, " AND ")
+	}
+
+	if param.SortBy == entity.SortByCreatedAt {
+		param.SortBy = "u.created_at"
+	} else {
+		param.SortBy = "u.friend_count"
+	}
+
+	query := fmt.Sprintf(`
+        SELECT u.id, u.name, u.image_url, u.friend_count, u.created_at
+        FROM users u
+				%s
+				ORDER BY %s %s
+				LIMIT %d OFFSET %d`, whereClause, param.SortBy, param.OrderBy, param.Limit, param.Offset)
+
+	return query
+}
+
+func (r *friendRepo) GetListFriends(param *entity.ListFriendPayload) ([]entity.UserList, *entity.Meta, error) {
 	var listUser []entity.UserList
-	err := r.db.Select(&listUser, query)
-	if err != nil {
-		log.Println("Error executing query:", err)
-		return listUser, nil, err
+	var query string
+
+	if param.OnlyFriend {
+		query = GetQueryOnlyFriend(param, "JOIN friends f ON u.id = f.user_id1", fmt.Sprintf("f.user_id2 = '%s'", param.UserId))
+
+		err := r.db.Select(&listUser, query)
+		if err != nil {
+			log.Println("Error executing query:", err)
+			return listUser, nil, err
+		}
+
+		var listUser1 []entity.UserList
+		query2 := GetQueryOnlyFriend(param, "JOIN friends f ON u.id = f.user_id2", fmt.Sprintf("f.user_id1 = '%s'", param.UserId))
+		err1 := r.db.Select(&listUser1, query2)
+		if err1 != nil {
+			log.Println("Error executing query:", err1)
+			return listUser1, nil, err1
+		}
+
+		listUser = append(listUser, listUser1...)
+	} else {
+		query = GetQueryParam(param)
+
+		err := r.db.Select(&listUser, query)
+		if err != nil {
+			log.Println("Error executing query:", err)
+			return listUser, nil, err
+		}
 	}
 
 	pagination := &entity.Meta{
