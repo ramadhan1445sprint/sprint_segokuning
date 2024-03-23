@@ -16,6 +16,8 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
+	db.SetMaxOpenConns(100)
+	db.SetMaxIdleConns(80)
 
 	s := server.NewServer(db)
 	s.RegisterRoute()
