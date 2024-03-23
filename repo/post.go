@@ -3,6 +3,7 @@ package repo
 import (
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -180,6 +181,17 @@ func (r *postRepo) GetPost(filter *entity.PostFilter) ([]entity.PostData, error)
 		}
 		postData = append(postData, temp)
 	}
+
+	slices.SortFunc(postData, func(a, b entity.PostData) int {
+		t1, _ := time.Parse(time.RFC3339, a.Post.CreatedAt)
+		t2, _ := time.Parse(time.RFC3339, b.Post.CreatedAt)
+
+		if t1.After(t2) {
+			return -1
+		} else {
+			return 1
+		}
+	})
 
 	return postData, nil
 }
