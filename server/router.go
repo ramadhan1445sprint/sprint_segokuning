@@ -6,6 +6,7 @@ import (
 
 	awsCfg "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
 	"github.com/ramadhan1445sprint/sprint_segokuning/config"
@@ -23,6 +24,7 @@ func (s *Server) RegisterRoute() {
 	registerFriendRouter(mainRoute, s.db)
 	registerImageRoute(mainRoute)
 	registerFriendRouter(mainRoute, s.db)
+	registerPostRouter(mainRoute, s.db, s.validator)
 }
 
 func registerHealthRoute(r fiber.Router, db *sqlx.DB) {
@@ -73,6 +75,16 @@ func registerFriendRouter(r fiber.Router, db *sqlx.DB) {
 	newRouteWithAuth(friendGroup, "POST", "/", ctr.AddFriend)
 	newRouteWithAuth(friendGroup, "DELETE", "/", ctr.DeleteFriend)
 	newRouteWithAuth(friendGroup, "GET", "/", ctr.GetListFriends)
+}
+
+func registerPostRouter(r fiber.Router, db *sqlx.DB, validate *validator.Validate) {
+	postCtr := controller.NewPostController(svc.NewPostSvc(repo.NewPostRepo(db)), validate)
+	commentCtr := controller.NewCommentController(svc.NewCommentSvc(repo.NewCommentRepo(db)), validate)
+	postGroup := r.Group("/post")
+
+	newRouteWithAuth(postGroup, "GET", "", postCtr.GetPost)
+	newRouteWithAuth(postGroup, "POST", "", postCtr.CreatePost)
+	newRouteWithAuth(postGroup, "POST", "/comment", commentCtr.CreateComment)
 }
 
 func newRoute(router fiber.Router, method, path string, handler fiber.Handler) {
