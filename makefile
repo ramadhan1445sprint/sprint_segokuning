@@ -4,7 +4,7 @@ export
 .phony: build migrate rollback
 
 build:
-	GOOS=linux GOARCH=amd64 go build -o main main.go
+	GOOS=linux GOARCH=amd64 go build -o main_ilhamnyto main.go
 
 migrate:
 	migrate -database "postgres://$(DB_USERNAME):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=verify-full&rootcert=ap-southeast-1-bundle.pem" -path db/migrations up
