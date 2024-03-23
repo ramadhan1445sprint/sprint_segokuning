@@ -21,7 +21,7 @@ func NewCommentSvc(repo repo.CommentRepo) CommentSvc {
 
 func (s *commentSvc) CreateComment(comment entity.Comment) *customErr.CustomError {
 	_, err := uuid.Parse(comment.PostID)
-	
+
 	if err != nil {
 		custErr := customErr.NewNotFoundError("post not found")
 		return &custErr
@@ -36,18 +36,6 @@ func (s *commentSvc) CreateComment(comment entity.Comment) *customErr.CustomErro
 
 	if !exist {
 		custErr := customErr.NewNotFoundError("post not found")
-		return &custErr
-	}
-
-	isFriendPost, err := s.repo.CheckFriendPost(comment.PostID, comment.UserID)
-
-	if err != nil {
-		customErr := customErr.NewInternalServerError(err.Error())
-		return &customErr
-	}
-
-	if !isFriendPost {
-		custErr := customErr.NewBadRequestError("not friend's post")
 		return &custErr
 	}
 
