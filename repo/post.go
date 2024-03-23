@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-
+	"time"
 
 	"github.com/jackc/pgtype"
 	"github.com/jmoiron/sqlx"
@@ -71,7 +71,7 @@ func (r *postRepo) GetPost(filter *entity.PostFilter) ([]entity.PostData, error)
 		}
 	}
 
-	if len(filter.SearchTag) > 0 {	
+	if len(filter.SearchTag) > 0 {
 		jsonTag, err := json.Marshal([]string(filter.SearchTag))
 		if err == nil {
 			replacer := strings.NewReplacer("[", "{", "]", "}")
@@ -84,7 +84,7 @@ func (r *postRepo) GetPost(filter *entity.PostFilter) ([]entity.PostData, error)
 		}
 	}
 	query += where
-	query += fmt.Sprintf(" ORDER BY p.created_at DESC, c.created_at desc limit %d offset %d", filter.Limit, filter.Offset)
+	query += fmt.Sprintf(" ORDER BY p.created_at DESC limit %d offset %d", filter.Limit, filter.Offset)
 
 	rows, err := r.db.Query(query)
 
@@ -122,7 +122,7 @@ func (r *postRepo) GetPost(filter *entity.PostFilter) ([]entity.PostData, error)
 		}
 
 		tempPostDetail.Tags = tagsSlice
-		tempPostDetail.CreatedAt = postRawDBData.PostCreatedAt
+		tempPostDetail.CreatedAt = postRawDBData.PostCreatedAt.Format(time.RFC3339)
 		tempPostData.Post = tempPostDetail
 
 		tempPostCreator.UserID = postRawDBData.CreatorID
@@ -175,7 +175,7 @@ func (r *postRepo) GetPost(filter *entity.PostFilter) ([]entity.PostData, error)
 		temp := postMap[key]
 		if postMapComment[key] == nil {
 			temp.Comments = []entity.PostComments{}
-		}else {
+		} else {
 			temp.Comments = postMapComment[key]
 		}
 		postData = append(postData, temp)

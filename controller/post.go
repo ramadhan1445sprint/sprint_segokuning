@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -11,7 +12,7 @@ import (
 )
 
 type PostController struct {
-	svc svc.PostSvc
+	svc      svc.PostSvc
 	validate *validator.Validate
 }
 
@@ -22,12 +23,12 @@ func NewPostController(svc svc.PostSvc, validate *validator.Validate) *PostContr
 func (c *PostController) CreatePost(ctx *fiber.Ctx) error {
 	var postReq entity.Post
 	userId := ctx.Locals("user_id").(string)
-
+	
 	if err := ctx.BodyParser(&postReq); err != nil {
 		custErr := customErr.NewBadRequestError(err.Error())
 		return ctx.Status(custErr.StatusCode).JSON(fiber.Map{"message": custErr.Message})
 	}
-
+	
 	if err := c.validate.Struct(postReq); err != nil {
 		validationErrors := err.(validator.ValidationErrors)
 		for _, e := range validationErrors {
@@ -48,6 +49,19 @@ func (c *PostController) CreatePost(ctx *fiber.Ctx) error {
 func (c *PostController) GetPost(ctx *fiber.Ctx) error {
 	var filterReq entity.PostFilter
 
+	limit := ctx.Query("limit")
+	if limit == "" {
+		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"message": "invalid param",
+		})
+	}
+	offset := ctx.Query("offset")
+	if offset == "" {
+		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"message": "invalid param",
+		})
+	}
+
 	if err := ctx.QueryParser(&filterReq); err != nil {
 		custErr := customErr.NewBadRequestError(err.Error())
 		return ctx.Status(custErr.StatusCode).JSON(fiber.Map{"message": custErr.Message})
@@ -60,6 +74,8 @@ func (c *PostController) GetPost(ctx *fiber.Ctx) error {
 			return ctx.Status(custErr.StatusCode).JSON(fiber.Map{"message": custErr.Message})
 		}
 	}
+
+	log.Printf("%+v\n", filterReq)
 
 	if filterReq.Limit == 0 {
 		filterReq.Limit = 5
