@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -35,8 +36,8 @@ func (c *CommentController) CreateComment(ctx *fiber.Ctx) error {
 			return ctx.Status(custErr.StatusCode).JSON(fiber.Map{"message": custErr.Message})
 		}
 	}
-	
 	commentReq.UserID = userId
+	log.Printf("%+v\n", commentReq)
 
 	if err := c.svc.CreateComment(commentReq); err != nil {
 		return ctx.Status(err.StatusCode).JSON(fiber.Map{"message": err.Message})
